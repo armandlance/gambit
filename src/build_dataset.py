@@ -1,10 +1,13 @@
 """Semaine 1 : construire un dataset de positions annotées par Stockfish
 à partir d'un dump PGN Lichess (.pgn ou .pgn.zst).
 """
-
-from path import Path
-import chess
 import io
+from path import Path
+
+import chess
+import chess.engine
+import chess.pgn
+
 
 PIECE_VALUES = {chess.KNIGHT: 3, chess.BISHOP: 3, chess.ROOK: 5, chess.QUEEN: 9}
 
@@ -45,3 +48,17 @@ def keep_game(game: chess.pgn.Game, min_elo: int, max_elo: int) -> bool:
     if not (min_elo <= white <= max_elo and min_elo <= black <= max_elo):
         return False
     return h.get("Termination") == "Normal"
+
+
+def analyse_position(engine, board, depth):
+    info = engine.analyse(board, chess.engine.Limit(depth=depth))
+    score = info["score"].white()  # point de vue des Blancs
+    pv = info.get("pv", [])
+    best = pv[0] if pv else None
+    return {
+        "eval_cp": score.score(),  # None si mat forcé
+        "mate_in": score.mate(),  # None si pas de mat forcé
+        "best_move_uci": best.uci() if best else None,
+        "best_move_san": board.san(best) if best else None,
+        "pv_san": board.variation_san(pv[:5]) if pv else None,
+    }
