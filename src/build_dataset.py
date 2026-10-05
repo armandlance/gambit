@@ -16,3 +16,10 @@ def open_pgn(path: Path):
         reader = zstd.ZstdDecompressor().stream_reader(open(path, "rb"))
         return io.TextIOWrapper(reader, encoding="utf-8")
     return open(path, encoding="utf-8")
+
+def non_pawn_material(board: chess.Board) -> int:
+    return sum(
+        value * len(board.pieces(piece_type, color))
+        for piece_type, value in PIECE_VALUES.items()
+        for color in (chess.WHITE, chess.BLACK)
+    )
