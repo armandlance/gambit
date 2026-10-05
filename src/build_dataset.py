@@ -34,3 +34,14 @@ def game_phase(board: chess.Board) -> str:
     if non_pawn_material(board) <= 20:
         return "endgame"
     return "middlegame"
+
+
+def keep_game(game: chess.pgn.Game, min_elo: int, max_elo: int) -> bool:
+    h = game.headers
+    try:
+        white, black = int(h["WhiteElo"]), int(h["BlackElo"])
+    except (KeyError, ValueError):
+        return False
+    if not (min_elo <= white <= max_elo and min_elo <= black <= max_elo):
+        return False
+    return h.get("Termination") == "Normal"
